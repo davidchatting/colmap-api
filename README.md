@@ -43,12 +43,7 @@ echo '/swapfile none swap sw 0 0' >> /etc/fstab
 
 ### Caddy reverse proxy
 
-Caddy sits in front of the Node process and forwards matching requests to it. Two directives match the `/colmap-api` prefix but handle it differently:
-
-- `handle_path /colmap-api*` — matches the prefix, then **strips it** before forwarding. A request for `/colmap-api/jobs` arrives at the backend as `/jobs`.
-- `handle /colmap-api*` — matches the prefix, but forwards the request **unchanged**. A request for `/colmap-api/jobs` arrives at the backend as `/colmap-api/jobs`.
-
-Every route in `server.js` is defined with the `/colmap-api` prefix baked in (e.g. `app.post('/colmap-api/jobs', ...)`), so the prefix needs to survive the proxy hop. Use `handle`, not `handle_path`:
+Caddy sits in front of the Node process and forwards matching requests to it. Every route in `server.js` is defined with the `/colmap-api` prefix baked in (e.g. `app.post('/colmap-api/jobs', ...)`), so the proxy must forward requests with the path unchanged — `handle` does this. (Caddy also has `handle_path`, which strips the matched prefix before forwarding; don't use that here, since the backend expects the prefix to still be there.)
 
 ```
 your-domain.com {
