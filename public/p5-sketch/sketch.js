@@ -3,7 +3,7 @@
 
 p5.disableFriendlyErrors = true;
 
-const API_BASE = '';
+const API_BASE = 'https://api.davidchatting.com';
 
 let droppedImages = [];
 let imageByName   = {};
@@ -18,7 +18,7 @@ let dragging = false, lastMX, lastMY;
 // HTML overlay elements
 let elThumbs, elDropHint, elStatus, elOrbitHint;
 
-import(API_BASE + '/client.js')
+import('../client.js')
   .then(mod => { submitPoseJob = mod.submitPoseJob })
   .catch(err => { setStatus('API client failed to load: ' + err.message) });
 

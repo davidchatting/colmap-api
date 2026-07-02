@@ -26,7 +26,7 @@
   <div id="result"></div>
 
   <script type="module">
-    const API = ''
+    const API = 'https://api.davidchatting.com'
 
     const picker   = document.getElementById('picker')
     const btn      = document.getElementById('btn')
@@ -68,7 +68,7 @@
 
         // WebSocket progress
         await new Promise((resolve, reject) => {
-          const ws = new WebSocket(`ws://${location.host}/jobs/${jobId}/ws`)
+          const ws = new WebSocket(`${API.replace(/^http/, 'ws')}/jobs/${jobId}/ws`)
 
           ws.onmessage = ({ data }) => {
             const msg = JSON.parse(data)
