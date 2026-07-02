@@ -23,12 +23,12 @@ COLMAP CLI (CPU, headless)
 
 ## Server setup
 
-Requires Ubuntu 22.04 / 24.04, Node.js 20+, and COLMAP. Run `setup.sh` on a fresh droplet to install dependencies:
+Requires Ubuntu 22.04 / 24.04, Node.js 20+, and COLMAP. Clone the repo, then run `setup.sh` on a fresh droplet to install dependencies:
 
 ```bash
-bash setup.sh
-git clone https://github.com/davidchatting-bot/colmap-api.git
+git clone https://github.com/davidchatting/colmap-api.git
 cd colmap-api
+bash setup.sh
 npm install
 node server.js
 ```
