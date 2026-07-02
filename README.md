@@ -156,7 +156,7 @@ Copy the three files (`index.html`, `sketch.js`, `style.css`) into the [p5.js ed
 
 ## Test page
 
-A minimal browser test page is available at `/colmap/test.html` — pick images with the file picker, click Run COLMAP, and watch the pipeline stages stream in.
+A minimal browser test page is available at `/colmap/` — pick images with the file picker, click Run COLMAP, and watch the pipeline stages stream in.
 
 ## Notes
 
