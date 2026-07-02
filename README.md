@@ -43,7 +43,12 @@ echo '/swapfile none swap sw 0 0' >> /etc/fstab
 
 ### Caddy reverse proxy
 
-The server itself requires every route and the WebSocket upgrade to be prefixed with `/colmap-api` (not stripped by the proxy), so add to your Caddyfile:
+Caddy sits in front of the Node process and forwards matching requests to it. Two directives match the `/colmap-api` prefix but handle it differently:
+
+- `handle_path /colmap-api*` — matches the prefix, then **strips it** before forwarding. A request for `/colmap-api/jobs` arrives at the backend as `/jobs`.
+- `handle /colmap-api*` — matches the prefix, but forwards the request **unchanged**. A request for `/colmap-api/jobs` arrives at the backend as `/colmap-api/jobs`.
+
+Every route in `server.js` is defined with the `/colmap-api` prefix baked in (e.g. `app.post('/colmap-api/jobs', ...)`), so the prefix needs to survive the proxy hop. Use `handle`, not `handle_path`:
 
 ```
 your-domain.com {
@@ -53,9 +58,7 @@ your-domain.com {
 }
 ```
 
-Note this uses `handle`, not `handle_path` — the `/colmap-api` prefix must reach the backend unmodified, since `server.js` matches on it directly.
-
-Then `systemctl reload caddy`.
+Then reload Caddy: `systemctl reload caddy`.
 
 ## API
 
