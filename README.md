@@ -6,8 +6,8 @@ REST API wrapping [COLMAP](https://colmap.github.io/) for camera pose estimation
 
 ```
 Browser (p5.js sketch)
-  │  drop images → POST /jobs (multipart)
-  │  connect → WS /jobs/:id/ws (progress stream)
+  │  drop images → POST /colmap-api/jobs (multipart)
+  │  connect → WS /colmap-api/jobs/:id/ws (progress stream)
   │  receive → { cameras, poses }
   ▼
 Express API (Node.js)  ←── Caddy reverse proxy (HTTPS/WSS)
@@ -43,27 +43,29 @@ echo '/swapfile none swap sw 0 0' >> /etc/fstab
 
 ### Caddy reverse proxy
 
-To serve over HTTPS with WebSocket support, add to your Caddyfile:
+The server itself requires every route and the WebSocket upgrade to be prefixed with `/colmap-api` (not stripped by the proxy), so add to your Caddyfile:
 
 ```
 your-domain.com {
-    handle_path /colmap* {
+    handle /colmap-api* {
         reverse_proxy 127.0.0.1:3001
     }
 }
 ```
 
+Note this uses `handle`, not `handle_path` — the `/colmap-api` prefix must reach the backend unmodified, since `server.js` matches on it directly.
+
 Then `systemctl reload caddy`.
 
 ## API
 
-### `GET /health`
+### `GET /colmap-api/health`
 
 Returns `{ "status": "ok" }`. Use to verify the server is reachable.
 
 ---
 
-### `POST /jobs`
+### `POST /colmap-api/jobs`
 
 Upload images for reconstruction. Returns a job ID immediately; processing happens asynchronously.
 
@@ -88,7 +90,7 @@ Optional tuning fields (all numeric):
 
 ---
 
-### `GET /jobs/:id`
+### `GET /colmap-api/jobs/:id`
 
 Poll job status and result.
 
@@ -104,9 +106,9 @@ Poll job status and result.
 
 ---
 
-### `WS /jobs/:id/ws`
+### `WS /colmap-api/jobs/:id/ws`
 
-Stream progress updates for a job. Connect immediately after `POST /jobs`.
+Stream progress updates for a job. Connect immediately after `POST /colmap-api/jobs`.
 
 Receives JSON messages:
 
@@ -121,11 +123,11 @@ Final message has `status: "done"` with `result.poses` or `status: "error"` with
 `public/client.js` is an ES module you can import from any page on the same origin or via dynamic import from a different origin (CORS is enabled).
 
 ```js
-import { submitPoseJob } from 'https://your-domain.com/colmap/client.js'
+import { submitPoseJob } from 'https://your-domain.com/colmap-api/client.js'
 
 const imgs = document.querySelectorAll('.scene-image')
 const { cameras, poses } = await submitPoseJob(imgs, {
-  apiBase: 'https://your-domain.com/colmap',
+  apiBase: 'https://your-domain.com/colmap-api',
   onProgress: ({ stage }) => console.log(stage),
 })
 ```
@@ -152,11 +154,11 @@ Image elements can be same-origin `<img>` tags or elements with `src` set to a d
 - Progress streams live via WebSocket
 - Camera poses displayed on canvas when done
 
-Copy the three files (`index.html`, `sketch.js`, `style.css`) into the [p5.js editor](https://editor.p5js.org) or access the hosted version at `/colmap/p5-sketch/index.html`. Update `API_BASE` in `sketch.js` to point to your server.
+Copy the three files (`index.html`, `sketch.js`, `style.css`) into the [p5.js editor](https://editor.p5js.org) or access the hosted version at https://davidchatting.com/colmap-api/p5-sketch/index.html. Update `API_BASE` in `sketch.js` to point to your server.
 
 ## Test page
 
-A minimal browser test page is available at `/colmap/` — pick images with the file picker, click Run COLMAP, and watch the pipeline stages stream in.
+A minimal browser test page is available at https://davidchatting.com/colmap-api/ — pick images with the file picker, click Run COLMAP, and watch the pipeline stages stream in.
 
 ## Notes
 

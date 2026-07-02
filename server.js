@@ -30,7 +30,7 @@ app.use((_req, res, next) => {
 app.use(express.static(path.join(__dirname, 'public')))
 
 // Inject jobId before multer so the storage destination can use it
-app.use('/jobs', (req, _res, next) => {
+app.use('/colmap-api/jobs', (req, _res, next) => {
   req.jobId = randomUUID()
   next()
 })
@@ -53,11 +53,11 @@ const upload = multer({
   },
 })
 
-// GET /health
-app.get('/health', (_req, res) => res.json({ status: 'ok' }))
+// GET /colmap-api/health
+app.get('/colmap-api/health', (_req, res) => res.json({ status: 'ok' }))
 
-// POST /jobs — upload images and queue a reconstruction
-app.post('/jobs', upload.array('images'), (req, res) => {
+// POST /colmap-api/jobs — upload images and queue a reconstruction
+app.post('/colmap-api/jobs', upload.array('images'), (req, res) => {
   if (!req.files?.length) {
     return res.status(400).json({ error: 'No images provided' })
   }
@@ -83,8 +83,8 @@ app.post('/jobs', upload.array('images'), (req, res) => {
   res.status(202).json({ jobId })
 })
 
-// GET /jobs/:id — poll status / result
-app.get('/jobs/:id', (req, res) => {
+// GET /colmap-api/jobs/:id — poll status / result
+app.get('/colmap-api/jobs/:id', (req, res) => {
   const job = queue.get(req.params.id)
   if (!job) return res.status(404).json({ error: 'Job not found' })
 
@@ -101,7 +101,7 @@ const server = http.createServer(app)
 const wss = new WebSocketServer({ noServer: true })
 
 server.on('upgrade', (req, socket, head) => {
-  const match = req.url.match(/^\/jobs\/([^/]+)\/ws$/)
+  const match = req.url.match(/^\/colmap-api\/jobs\/([^/]+)\/ws$/)
   if (!match) return socket.destroy()
 
   const jobId = match[1]
