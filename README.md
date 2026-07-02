@@ -43,27 +43,31 @@ echo '/swapfile none swap sw 0 0' >> /etc/fstab
 
 ### Caddy reverse proxy
 
-Caddy sits in front of the Node process and forwards matching requests to it. Every route in `server.js` is defined with the `/colmap-api` prefix baked in (e.g. `app.post('/colmap-api/jobs', ...)`), so the proxy must forward requests with the path unchanged — `handle` does this. (Caddy also has `handle_path`, which strips the matched prefix before forwarding; don't use that here, since the backend expects the prefix to still be there.)
+Clients always call the API under the public `/colmap-api` path, but `server.js` defines its routes without that prefix (e.g. `app.post('/jobs', ...)`) — so the proxy needs to strip `/colmap-api` before forwarding. `handle_path` does exactly that:
 
 ```
 your-domain.com {
-    handle /colmap-api* {
+    handle_path /colmap-api* {
         reverse_proxy 127.0.0.1:3001
     }
 }
 ```
 
+A request to `/colmap-api/jobs` arrives at the Node process as `/jobs`.
+
 Then reload Caddy: `systemctl reload caddy`.
 
 ## API
 
-### `GET /colmap-api/health`
+Routes below are shown as `server.js` defines them internally (Caddy strips the `/colmap-api` prefix before forwarding — see above). Clients should always call them at `https://your-domain.com/colmap-api/...`.
+
+### `GET /health`
 
 Returns `{ "status": "ok" }`. Use to verify the server is reachable.
 
 ---
 
-### `POST /colmap-api/jobs`
+### `POST /jobs`
 
 Upload images for reconstruction. Returns a job ID immediately; processing happens asynchronously.
 
@@ -88,7 +92,7 @@ Optional tuning fields (all numeric):
 
 ---
 
-### `GET /colmap-api/jobs/:id`
+### `GET /jobs/:id`
 
 Poll job status and result.
 
@@ -104,9 +108,9 @@ Poll job status and result.
 
 ---
 
-### `WS /colmap-api/jobs/:id/ws`
+### `WS /jobs/:id/ws`
 
-Stream progress updates for a job. Connect immediately after `POST /colmap-api/jobs`.
+Stream progress updates for a job. Connect immediately after `POST /jobs`.
 
 Receives JSON messages:
 
