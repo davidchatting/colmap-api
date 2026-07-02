@@ -59,15 +59,13 @@ Then reload Caddy: `systemctl reload caddy`.
 
 ## API
 
-Routes below are shown as `server.js` defines them internally (Caddy strips the `/colmap-api` prefix before forwarding — see above). Clients should always call them at `https://your-domain.com/colmap-api/...`.
-
-### `GET /health`
+### `GET /colmap-api/health`
 
 Returns `{ "status": "ok" }`. Use to verify the server is reachable.
 
 ---
 
-### `POST /jobs`
+### `POST /colmap-api/jobs`
 
 Upload images for reconstruction. Returns a job ID immediately; processing happens asynchronously.
 
@@ -92,7 +90,7 @@ Optional tuning fields (all numeric):
 
 ---
 
-### `GET /jobs/:id`
+### `GET /colmap-api/jobs/:id`
 
 Poll job status and result.
 
@@ -108,9 +106,9 @@ Poll job status and result.
 
 ---
 
-### `WS /jobs/:id/ws`
+### `WS /colmap-api/jobs/:id/ws`
 
-Stream progress updates for a job. Connect immediately after `POST /jobs`.
+Stream progress updates for a job. Connect immediately after `POST /colmap-api/jobs`.
 
 Receives JSON messages:
 
