@@ -3,7 +3,7 @@
 
 p5.disableFriendlyErrors = true;
 
-const API_BASE = 'https://api.davidchatting.com';
+const API_BASE = 'https://api.davidchatting.com/colmap';
 
 let droppedImages = [];
 let imageByName   = {};
